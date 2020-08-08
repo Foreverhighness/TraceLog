@@ -27,13 +27,14 @@
 *.lib
 
 # Executables
-logagent
-logtransfer
+logagent/logagent
+logtransfer/logtransfer
 *.exe
 *.out
 *.app
 
 # Resource
+.vscode
 /resources/*
 !/resources/*.sh
 *tmp*
