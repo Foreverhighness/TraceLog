@@ -2,6 +2,7 @@ package main
 
 import (
 	"logagent/conf"
+	"logagent/etcd"
 	"logagent/kafka"
 	"logagent/taillog"
 	"os"
@@ -15,12 +16,6 @@ import (
 const (
 	configPath = "./conf/config.ini"
 )
-
-var configs = []*taillog.TailTaskConfig{
-	{Path: "./tmp/1.log", Topic: "Mytest_1"},
-	{Path: "./tmp/2.log", Topic: "Mytest_2"},
-	{Path: "./tmp/3.log", Topic: "Mytest_3"},
-}
 
 func init() {
 	golog.SetLevel("debug")
@@ -49,13 +44,13 @@ func main() {
 	}
 	golog.Info("[main] Connect kafka sucess.")
 
-	// // Connect to ectd
-	// etcd.Connect([]string{appConf.EtcdConf.Address}, appConf.EtcdConf.Timeout)
-	// // Get remote tail configs
-	// configs, err := etcd.GetConfig(appConf.EtcdConf.CollectLogKey)
-	// if err != nil {
-	// 	golog.Error("[main] Get configs failed. err: ", err)
-	// }
+	// Connect to ectd
+	etcd.Connect([]string{appConf.EtcdConf.Address}, appConf.EtcdConf.Timeout)
+	// Get remote tail configs
+	configs, err := etcd.GetConfig(appConf.EtcdConf.CollectLogKey)
+	if err != nil {
+		golog.Error("[main] Get configs failed. err: ", err)
+	}
 
 	// Start taillog process
 	err = taillog.Init(configs)
@@ -65,7 +60,7 @@ func main() {
 	}
 	golog.Info("[main] Start taillog success")
 
-	// go etcd.BindingConfigChannel(appConf.EtcdConf.CollectLogKey, taillog.GetUpdateChan())
+	go etcd.BindingConfigChannel(appConf.EtcdConf.CollectLogKey, taillog.GetUpdateChan())
 
 	wait()
 }

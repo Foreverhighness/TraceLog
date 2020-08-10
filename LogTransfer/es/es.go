@@ -18,23 +18,23 @@ var (
 // Parameter ...
 type Parameter struct {
 	Index string
-	Data  string
+	Data  interface{}
 }
 
 // Init ...
-func Init(addrs string, chansize int) (err error) {
+func Init(addr string, chansize int) (err error) {
 	if nil != client {
 		return nil
 	}
-	if !strings.HasPrefix(addrs, "http://") {
-		addrs = "http://" + addrs
+	if !strings.HasPrefix(addr, "http://") {
+		addr = "http://" + addr
 	}
-	client, err = elastic.NewClient(elastic.SetURL(addrs))
+	client, err = elastic.NewClient(elastic.SetSniff(false), elastic.SetURL(addr))
 	if err != nil {
-		golog.Error("[es] Fail to connect ES. err: ", err)
+		golog.Errorf("[es] Fail to connect ES by %s. err: %v", addr, err)
 		return
 	}
-	info, code, err := client.Ping(addrs).Do(context.Background())
+	info, code, err := client.Ping(addr).Do(context.Background())
 	if err != nil {
 		golog.Error("[es] ES do not response. err: ", err)
 		return
@@ -55,14 +55,15 @@ func sendToES() {
 		select {
 		case message := <-dataChan:
 			put, err := client.Index().
-				Index(message.Index).
-				BodyString(message.Data).
+				Index(strings.ToLower(message.Index)).
+				Type("log").
+				BodyJson(message.Data).
 				Do(context.Background())
 			if err != nil {
 				golog.Error("[es] Fail to put message to es. err: ", err)
 				return
 			}
-			fmt.Printf("Indexed tweet %s to index %s, type %s\n", put.Id, put.Index, put.Type)
+			golog.Debugf("Indexed message <%s> to index <%s>, type <%s>, %s\n", put.Id, put.Index, put.Type, put.Result)
 		default:
 			time.Sleep(50 * time.Millisecond)
 		}

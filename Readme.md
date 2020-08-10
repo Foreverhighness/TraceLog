@@ -4,9 +4,9 @@
 
 `logAgent` 中实现了日志分发存储的功能，并通过 `etcd` 进行配置的热更新，用一些中间件比如 `kafka` 来维护可靠性。
 
-`logTransfer` *TODO*.
+`logTransfer` 中实现将 `kafka` 中的数据取出发送至 `ElasticSearch` 的功能。 `ES` 中的数据可以通过 `Kibana` 来进行展示。
 
-`resources` 中编写了下载依赖项的 `Bash` 脚本。
+`resources` 中编写了下载依赖项的脚本。
 
 ## 做出的改进
 
@@ -51,14 +51,35 @@
   ```
 
   然后再执行 `go get`.
+  
+- `ElasticSearch` 默认启动后外网无法访问，修改配置文件
+
+  ```bash
+  >>> sudo vim /etc/elasticsearch/elasticsearch.yml
+  network.host: 0.0.0.0
+  discovery.seed_hosts: ["0.0.0.0"]
+  >>> sudo ufw allow from ${your ip} to any port 9200
+  >>> sudo ufw enable
+  ```
+
+- 无法连接 `ES`, 报错信息为 `err: no active connection found: no Elasticsearch node available`:
+
+  关闭 `Sniff` 模式；或者设置 `ES` 的地址为`publish_address` 地址。
+
+  ```Go
+  client, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL(url))
+  ```
+
 
 ### 未解决
 
 - 依赖项下载太慢。
 - `start.sh` 编写不够合理，我希望的是每个都单独开一个 `shell` 进行观察，同时 `kafka` 要在 `zookeeper` 之后打开，但是没找到合适的方案。
+- 
 
 ## 收获与记录
 
 - 学会了 `Golang`.
 -  `Git` 使用水平达到了掌握。
 - 见识到了各种各样的中间件。
+- 学习了许多 Linux 下的命令。

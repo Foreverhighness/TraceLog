@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"logtransfer/conf"
 	"logtransfer/es"
+	"logtransfer/kafka"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,6 +17,7 @@ const (
 	configPath = "./conf/config.ini"
 )
 
+// 等待 Ctrl+C 来中断
 func wait() {
 	exitc := make(chan os.Signal, 1)
 	signal.Notify(exitc, os.Interrupt, os.Kill, syscall.SIGTERM)
@@ -27,9 +29,12 @@ func init() {
 
 func factory(topic string) func(string) {
 	return func(value string) {
+		data := &struct {
+			Data string `json:"data"`
+		}{Data: value}
 		parameter := &es.Parameter{
 			Index: topic,
-			Data:  value,
+			Data:  data,
 		}
 		es.SendToChan(parameter)
 		return
@@ -45,31 +50,29 @@ func main() {
 		return
 	}
 	golog.Info("[main] Success to open config file.")
+
 	// Connect ElasticSearch
 	err = es.Init(appConfig.ESConf.Address, appConfig.ESConf.ChanSize)
 	if err != nil {
 		golog.Error("[main] Fail to connect ElasticSearch. err: ", err)
 		return
 	}
-	es.SendToChan(&es.Parameter{
-		Index: "Mytest_1",
-		Data:  "This is a test.",
-	})
+
 	// Connect kafka
-	// workers := make([]*kafka.Worker, 0, len(appConfig.Topics))
-	// for _, topic := range appConfig.Topics {
-	// 	worker, err := kafka.NewWorker([]string{appConfig.KafkaConf.Address}, topic)
-	// 	worker.Do = factory(topic)
-	// 	if err != nil {
-	// 		golog.Errorf("[main] Fail to creater worker<%s, %s>. err: ", appConfig.KafkaConf.Address, topic, err)
-	// 		continue
-	// 	}
-	// 	golog.Infof("[main] Success to creater worker<%s, %s>.", appConfig.KafkaConf.Address, topic)
-	// 	workers = append(workers, worker)
-	// }
-	// for _, w := range workers {
-	// 	go w.Run()
-	// }
+	workers := make([]*kafka.Worker, 0, len(appConfig.Topics))
+	for _, topic := range appConfig.Topics {
+		worker, err := kafka.NewWorker([]string{appConfig.KafkaConf.Address}, topic)
+		worker.Do = factory(topic)
+		if err != nil {
+			golog.Errorf("[main] Fail to creater worker<%s, %s>. err: ", appConfig.KafkaConf.Address, topic, err)
+			continue
+		}
+		golog.Infof("[main] Success to creater worker<%s, %s>.", appConfig.KafkaConf.Address, topic)
+		workers = append(workers, worker)
+	}
+	for _, w := range workers {
+		go w.Run()
+	}
 	wait()
 }
 
@@ -78,7 +81,7 @@ func testConfig(appConfig *conf.AppConf) {
 	fmt.Println(appConfig.KafkaConf)
 	fmt.Println(appConfig.ESConf)
 	fmt.Println(appConfig.Topics)
-	fmt.Println(appConfig.Topics[0])
-	fmt.Println(appConfig.Topics[1])
-	fmt.Println(appConfig.Topics[2])
+	for idx, topic := range appConfig.Topics {
+		fmt.Println(idx, ": ", topic)
+	}
 }
