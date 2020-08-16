@@ -1,0 +1,17 @@
+version: "3.8"
+services: 
+  logtransfer:
+    build: .
+    networks:
+      - kafka
+      - es
+    volumes:
+      - ../docker/data/logtransfer:/conf
+
+networks:
+  kafka:
+    external:
+      name: kafka_TraceLog
+  es:
+    external:
+      name: es_TraceLog

@@ -19,10 +19,10 @@ func Connect(addrs []string, timeout int) (err error) {
 		DialTimeout: time.Duration(timeout) * time.Second,
 	})
 	if err != nil {
-		golog.Error("Failed to connect with etcd, err:", err)
+		golog.Error("[etcd] Failed to connect with etcd, err:", err)
 		return
 	}
-	golog.Info("Success to connect with etcd.")
+	golog.Info("[etcd] Success to connect with etcd.")
 	return
 }
 

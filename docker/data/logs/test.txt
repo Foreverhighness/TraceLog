@@ -1,0 +1,27 @@
+We know the game and we're gonna play it
+oops - thought I got that one.
+A fix I believe, not like I tested or anything
+I __ a word
+I am Spartacus
+fixed some minor stuff, might need some additional work.
+Crap. Tonight is raid night and I am already late.
+This will definitely break in 2087 (TODO)
+Use a real JS construct, WTF knows why this works in chromium.
+MOAR BIFURCATION
+SHIT ===> GOLD
+This changes nothing, don't look
+Another bug bites the dust
+git + ipynb = :(
+Fixing Chris's bug.
+I really should've committed this when I finished it...
+And if you ask me how I'm feeling
+Saint Pipeline, please give me the green light
+i dunno, maybe this works
+Merge pull my finger request
+Gotta make you understand
+Herping the derp derp (silly scoping error)
+Only Tom Cruise knows why.
+Now added delete for real
+assorted changes
+more ignored words
+wip

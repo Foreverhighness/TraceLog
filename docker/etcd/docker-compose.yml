@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.4.10
+    ports:
+      - "2379"
+      - "2380"
+    networks:
+      - TraceLog
+    environment:
+      - ETCDCTL_API=3
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2380
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_INITIAL_CLUSTER=node1=http://0.0.0.0:2380
+      - ETCD_NAME=node1
+    volumes:
+      - ../data/etcd-data:/etcd-data
+
+networks:
+  TraceLog:

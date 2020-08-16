@@ -44,12 +44,33 @@ func main() {
 	}
 	golog.Info("[main] Connect kafka sucess.")
 
+	configs := []*taillog.TailTaskConfig{
+		{
+			Path:  "/data/logs/1.log",
+			Topic: "test1",
+		},
+		{
+			Path:  "/data/logs/2.log",
+			Topic: "test2",
+		},
+		{
+			Path:  "/data/logs/3.log",
+			Topic: "test3",
+		},
+	}
+
 	// Connect to ectd
-	etcd.Connect([]string{appConf.EtcdConf.Address}, appConf.EtcdConf.Timeout)
-	// Get remote tail configs
-	configs, err := etcd.GetConfig(appConf.EtcdConf.CollectLogKey)
+	err = etcd.Connect([]string{appConf.EtcdConf.Address}, appConf.EtcdConf.Timeout)
 	if err != nil {
-		golog.Error("[main] Get configs failed. err: ", err)
+		golog.Error("[main] Fail to connect etcd. err:", err)
+	} else {
+		// Get remote tail configs
+		tmpconfigs, err := etcd.GetConfig(appConf.EtcdConf.CollectLogKey)
+		if err != nil {
+			golog.Error("[main] Get configs failed. err: ", err)
+		} else if len(tmpconfigs) != 0 {
+			configs = tmpconfigs
+		}
 	}
 
 	// Start taillog process

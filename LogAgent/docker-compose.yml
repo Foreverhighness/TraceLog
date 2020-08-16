@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  logagent:
+    build: .
+    networks:
+      - kafka
+      - etcd
+    volumes:
+      - ../docker/data/logagent:/conf
+      - ../docker/data/logs:/data/logs
+
+networks:
+  kafka:
+    external:
+      name: kafka_TraceLog
+  etcd:
+    external:
+      name: etcd_TraceLog
